@@ -2,6 +2,8 @@
 
 Creative coding / web experiment.
 
+Help my autustic son visualize his words.
+
 ## Run
 
 Open `index.html` in a browser.
