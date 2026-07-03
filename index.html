@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Syllable Entropy — A4 Swiss Poster</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Variable fonts -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,MONO,CASL@-15..0,300..1000,0..1,0..1&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:slnt,wght@-10..0,100..900&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,200..900;1,200..900&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&display=swap">
+
+  <style>
+    :root {
+      /* live poster variables */
+      --entropy: 0;
+      --wght: 400;
+      --wdScale: 1;
+      --baseline: 4px;
+      --tracking: 0em;
+
+      /* poster content font — the variable-font picker switches this */
+      --font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+      /* shared design system (aligns this tool with the rest of the set) */
+      --ui-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, Helvetica, Arial, sans-serif;
+      --bg:     #f6f4ef;
+      --ink:    #111111;
+      --muted:  #6e6a64;
+      --line:   rgba(0,0,0,.12);
+      --accent: #ff4f1f;
+      --blue:   #0a84ff;
+      --shadow: 0 18px 60px rgba(0,0,0,.12);
+
+      /* aliases so the existing poster rules resolve to the shared palette */
+      --border: var(--line);
+      --border-strong: var(--ink);
+      --text-main: var(--ink);
+      --text-muted: var(--muted);
+      --page-bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--ui-font);
+      padding: calc(var(--baseline) * 6);
+    }
+
+    /* A4 poster frame */
+
+    .page-frame {
+      width: min(840px, 100%);
+      aspect-ratio: 210 / 297;
+      background: var(--page-bg);
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.04),
+        0 12px 30px rgba(0, 0, 0, 0.10);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: calc(var(--baseline) * 5);
+    }
+
+    .page-inner {
+      border: 1px solid var(--border-strong);
+      padding: calc(var(--baseline) * 5) calc(var(--baseline) * 6);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--baseline) * 4);
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* TOP BAR */
+
+    .top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: calc(var(--baseline) * 5);
+      margin-bottom: calc(var(--baseline) * 4);
+    }
+
+    .top-left {
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--baseline) * 1);
+    }
+
+    h1 {
+      font-size: 18px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .top-sub {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+
+    .top-buttons {
+      display: flex;
+      gap: calc(var(--baseline) * 2);
+    }
+
+    button {
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-family: var(--ui-font);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.74);
+      color: var(--ink);
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    /* START = the primary action, carries the family's orange accent */
+    #startBtn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    button.secondary {
+      background: rgba(255,255,255,.74);
+      color: var(--ink);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: #ffffff;
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+      filter: brightness(0.95);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    /* STATUS + METERS */
+
+    .status-row {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+      gap: calc(var(--baseline) * 4);
+      margin-bottom: calc(var(--baseline) * 4);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: calc(var(--baseline) * 3);
+    }
+
+    .status-text {
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--baseline) * 1.5);
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--baseline) * 1.5);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1px solid var(--muted);
+      background: transparent;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .status-dot.live {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .status-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .status-value {
+      font-size: 12px;
+    }
+
+    .meters {
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--baseline) * 2);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .meter-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: calc(var(--baseline) * 0.5);
+    }
+
+    .meter-bar {
+      position: relative;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.07);
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      position: absolute;
+      inset: 0;
+      transform-origin: left center;
+      transform: scaleX(0);
+      background: var(--ink);
+      transition: transform 0.04s ease-out;
+    }
+
+    /* CONTROLS ROW */
+
+    .controls-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: calc(var(--baseline) * 4);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: calc(var(--baseline) * 4);
+      border-top: 1px solid var(--border);
+      padding-top: calc(var(--baseline) * 3);
+      flex-wrap: wrap;
+    }
+
+    .controls-left {
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--baseline) * 2);
+    }
+
+    .slider-group,
+    .font-group {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--baseline) * 2);
+      flex-wrap: wrap;
+    }
+
+    .slider-group label,
+    .font-group label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 10px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 160px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.08);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--ink);
+      cursor: pointer;
+      border: 1px solid var(--ink);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--ink);
+      border: 1px solid var(--ink);
+      cursor: pointer;
+    }
+
+    select {
+      background: #ffffff;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 4px 10px;
+      font-size: 11px;
+      font-family: var(--ui-font);
+    }
+
+    /* ENTROPY DISPLAY */
+
+    .transcript-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      margin-bottom: calc(var(--baseline) * 1.5);
+    }
+
+    .entropy-display {
+      font-family: var(--font-family);
+      font-size: clamp(32px, 6vw, 52px);
+      line-height: 1.05;
+      text-align: left;
+      margin-bottom: calc(var(--baseline) * 3);
+      letter-spacing: 0.04em;
+      position: relative;
+      padding: calc(var(--baseline) * 4) 0 calc(var(--baseline) * 2.5);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      min-height: calc(var(--baseline) * 12);
+    }
+
+    .units {
+      display: inline-block;
+      letter-spacing: var(--tracking);
+    }
+
+    .unit {
+      display: inline-block;
+    }
+
+    .unit-locked {
+      font-variation-settings:
+        "wght" var(--unit-wght);
+      transform-origin: left center;
+      transform: scaleX(var(--unit-wdScale));
+      transition: transform 0.08s ease-out, font-variation-settings 0.08s ease-out;
+    }
+
+    .unit-active {
+      font-variation-settings:
+        "wght" var(--wght);
+      transform-origin: left center;
+      transform: scaleX(var(--wdScale));
+    }
+
+    .word-space {
+      display: inline-block;
+      width: 0.35em;
+    }
+
+    .line-break {
+      display: block;
+      height: 0;
+      line-height: 0;
+    }
+
+    .debug {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      gap: calc(var(--baseline) * 3);
+    }
+
+    /* META STRIP: DATE + WAVEFORM */
+
+    .meta-strip {
+      margin-top: calc(var(--baseline) * 4);
+      padding-top: calc(var(--baseline) * 3);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: calc(var(--baseline) * 4);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .meta-left {
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--baseline) * 1);
+    }
+
+    .meta-label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 9px;
+    }
+
+    .meta-value {
+      font-size: 11px;
+      color: var(--text-main);
+    }
+
+    .meta-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--baseline) * 1);
+      align-items: flex-end;
+    }
+
+    .wave-label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 9px;
+    }
+
+    .wave-shell {
+      width: 100%;
+      max-width: 360px;
+      height: 32px;
+      border: 1px solid var(--border);
+      padding: 2px 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    #waveCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* EDIT PANEL */
+
+    .edit-panel {
+      margin-top: calc(var(--baseline) * 4);
+      border-top: 1px solid var(--border);
+      padding-top: calc(var(--baseline) * 3);
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--baseline) * 1.5);
+      font-size: 11px;
+    }
+
+    .edit-panel label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .edit-row {
+      display: flex;
+      gap: calc(var(--baseline) * 2);
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    #editText {
+      flex: 1;
+      min-height: calc(var(--baseline) * 10);
+      resize: vertical;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text-main);
+      padding: 6px 8px;
+      font-size: 11px;
+      font-family: var(--ui-font);
+    }
+
+    #applyEditBtn {
+      padding: 6px 12px;
+      font-size: 10px;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: calc(var(--baseline) * 3);
+      }
+
+      .page-frame {
+        padding: calc(var(--baseline) * 3);
+        aspect-ratio: auto;
+      }
+
+      .page-inner {
+        padding: calc(var(--baseline) * 4);
+      }
+
+      .top-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .status-row {
+        grid-template-columns: 1fr;
+      }
+
+      .controls-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .top-buttons {
+        align-self: flex-start;
+      }
+
+      .meta-strip {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .meta-right {
+        align-items: flex-start;
+      }
+    }
+
+    /* PRINT / PDF STYLES */
+
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+
+      .page-frame {
+        box-shadow: none;
+        border: none;
+        width: 100%;
+        aspect-ratio: auto;
+        padding: 0;
+      }
+
+      .page-inner {
+        border: none;
+        padding: 20mm 18mm;
+      }
+
+      /* Hide UI chrome for print */
+      .top-buttons,
+      .status-row,
+      .controls-row,
+      .edit-panel,
+      .debug {
+        display: none !important;
+      }
+
+      .top-row {
+        margin-bottom: 16mm;
+      }
+
+      .entropy-display {
+        border-top: 0.5pt solid #000;
+        border-bottom: 0.5pt solid #000;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-frame">
+    <div class="page-inner">
+      <div class="app">
+        <div class="top-row">
+          <div class="top-left">
+            <h1>SYLLABLE ENTROPY</h1>
+            <div class="top-sub">WHISPER THIN + ITALIC · LOUD HEAVY + WIDE</div>
+          </div>
+          <div class="top-buttons">
+            <button id="startBtn">START</button>
+            <button id="stopBtn" class="secondary" disabled>STOP</button>
+            <button id="printBtn" class="secondary">PDF</button>
+          </div>
+        </div>
+
+        <div class="status-row">
+          <div class="status-text">
+            <div class="status-line">
+              <div class="status-dot" id="statusDot"></div>
+              <div>
+                <div class="status-label">Status</div>
+                <div class="status-value" id="statusMsg">Idle. Press START to listen.</div>
+              </div>
+            </div>
+            <div class="status-line">
+              <div class="status-label">Speech</div>
+              <div class="status-value" id="speechStatus">Not started.</div>
+            </div>
+          </div>
+          <div class="meters">
+            <div class="meter">
+              <div class="meter-label">
+                <span>LOUDNESS</span>
+                <span id="loudVal">0.00</span>
+              </div>
+              <div class="meter-bar"><div class="meter-fill" id="loudFill"></div></div>
+            </div>
+            <div class="meter">
+              <div class="meter-label">
+                <span>SPECTRAL ENTROPY</span>
+                <span id="specVal">0.00</span>
+              </div>
+              <div class="meter-bar"><div class="meter-fill" id="specFill"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-row">
+          <div class="controls-left">
+            <div class="slider-group">
+              <label for="widthSlider">Width intensity</label>
+              <input id="widthSlider" type="range" min="0" max="100" value="50" />
+              <span id="widthPct">50%</span>
+            </div>
+            <div class="slider-group">
+              <label for="trackingSlider">Tracking</label>
+              <input id="trackingSlider" type="range" min="-20" max="80" value="0" />
+              <span id="trackingVal">0</span>
+            </div>
+            <div class="slider-group">
+              <label for="unitMode">Unit</label>
+              <select id="unitMode">
+                <option value="word" selected>Words</option>
+                <option value="syllable">Syllables</option>
+              </select>
+            </div>
+          </div>
+          <div class="font-group">
+            <label for="fontSelect">Font</label>
+            <select id="fontSelect">
+              <option value="recursive">Recursive</option>
+              <option value="inter" selected>Inter</option>
+              <option value="robotoFlex">Roboto Flex</option>
+              <option value="sourceSans">Source Sans 3</option>
+              <option value="sourceSerif">Source Serif 4</option>
+              <option value="fraunces">Fraunces</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="transcript-label">
+          LIVE DRAWING (SPACE = NEW WORD · "|" = LINE BREAK · UNIT = WORD / SYLLABLE)
+        </div>
+        <div class="entropy-display">
+          <div class="units" id="unitsContainer"></div>
+        </div>
+        <div class="debug">
+          <span>LOUDNESS: <span id="entropyVal">0.00</span></span>
+          <span>WGHT: <span id="wghtVal">400</span></span>
+          <span>WIDTH×: <span id="wdVal">1.00</span></span>
+        </div>
+
+        <!-- META: DATE + WAVEFORM -->
+        <div class="meta-strip">
+          <div class="meta-left">
+            <div class="meta-label">Date</div>
+            <div class="meta-value" id="dateValue"></div>
+          </div>
+          <div class="meta-right">
+            <div class="wave-label">Waveform</div>
+            <div class="wave-shell">
+              <canvas id="waveCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-panel">
+          <label for="editText">
+            Edit transcript (use "|" between words for line breaks · change UNIT then APPLY to reflow)
+          </label>
+          <div class="edit-row">
+            <textarea id="editText" placeholder="Press STOP and the transcript will appear here."></textarea>
+            <button id="applyEditBtn" class="secondary">APPLY</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const unitsContainer = document.getElementById("unitsContainer");
+    const statusDot = document.getElementById("statusDot");
+    const statusMsg = document.getElementById("statusMsg");
+    const speechStatus = document.getElementById("speechStatus");
+    const loudFill = document.getElementById("loudFill");
+    const specFill = document.getElementById("specFill");
+    const loudVal = document.getElementById("loudVal");
+    const specVal = document.getElementById("specVal");
+    const entropyVal = document.getElementById("entropyVal");
+    const wghtVal = document.getElementById("wghtVal");
+    const wdVal = document.getElementById("wdVal");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const printBtn = document.getElementById("printBtn");
+
+    const widthSlider = document.getElementById("widthSlider");
+    const widthPct = document.getElementById("widthPct");
+    const trackingSlider = document.getElementById("trackingSlider");
+    const trackingVal = document.getElementById("trackingVal");
+    const unitModeSelect = document.getElementById("unitMode");
+
+    const fontSelect = document.getElementById("fontSelect");
+    const editText = document.getElementById("editText");
+    const applyEditBtn = document.getElementById("applyEditBtn");
+    const dateValue = document.getElementById("dateValue");
+
+    const waveCanvas = document.getElementById("waveCanvas");
+    const fonts = {
+      recursive: '"Recursive", system-ui, sans-serif',
+      inter: '"Inter", system-ui, sans-serif',
+      robotoFlex: '"Roboto Flex", system-ui, sans-serif',
+      sourceSans: '"Source Sans 3", system-ui, sans-serif',
+      sourceSerif: '"Source Serif 4", Georgia, serif',
+      fraunces: '"Fraunces", Georgia, serif'
+    };
+
+    let waveCtx = null;
+    let waveData = []; // loudness samples
+
+    let audioCtx = null;
+    let analyser = null;
+    let freqData = null;
+    let timeData = null;
+    let running = false;
+
+    let recognition = null;
+    let speechSupported = false;
+
+    // Per-unit state
+    // { text, wght, wdScale, italic, breakAfter, hardBreakAfter }
+    let lockedUnits = [];
+    let activeUnit = null;
+
+    // Live style from audio
+    let currentWght = 400;
+    let currentWidth = 1.0;
+    let currentItalic = false;
+
+    // Width behavior
+    const BASE_WIDTH = 0.9;
+    const MAX_EXTRA_WIDTH = 0.3;
+    let widthIntensity = 0.5; // 0–1
+
+    // Unit mode: "word" or "syllable"
+    let unitMode = "word";
+
+    function clamp(v, min, max) {
+      return v < min ? min : v > max ? max : v;
+    }
+
+    // Basic syllable splitter (approximate)
+    function splitIntoSyllables(word) {
+      const original = word;
+      const lower = word.toLowerCase();
+      const vowels = "aeiouy";
+      let sylls = [];
+      let current = "";
+
+      for (let i = 0; i < lower.length; i++) {
+        const cLower = lower[i];
+        const cOrig = original[i];
+        const isVowel = vowels.includes(cLower);
+        const nextLower = lower[i + 1];
+        const nextIsVowel = vowels.includes(nextLower);
+
+        current += cOrig;
+
+        if (isVowel && !nextIsVowel) {
+          sylls.push(current);
+          current = "";
+        }
+      }
+      if (current.length > 0) sylls.push(current);
+      if (sylls.length === 0) sylls.push(original);
+      return sylls;
+    }
+
+    // Transcript -> sequence of units
+    // SPACE = new word; "|" token = force line break after last unit
+    function buildUnitSequence(transcript) {
+      const clean = transcript.trim();
+      if (!clean) return [];
+      const tokens = clean.split(/\s+/);
+      const seq = [];
+
+      for (const tok of tokens) {
+        if (tok === "|") {
+          if (seq.length) {
+            seq[seq.length - 1].hardBreakAfter = true;
+          }
+          continue;
+        }
+        const upper = tok.toUpperCase();
+
+        if (unitMode === "word") {
+          seq.push({
+            text: upper,
+            breakAfter: true,
+            hardBreakAfter: false
+          });
+        } else {
+          const syllables = splitIntoSyllables(upper);
+          syllables.forEach((syl, idx) => {
+            seq.push({
+              text: syl,
+              breakAfter: idx === syllables.length - 1,
+              hardBreakAfter: false
+            });
+          });
+        }
+      }
+      return seq;
+    }
+
+    // Units -> plain transcript (just words joined by space)
+    function unitsToTranscript() {
+      if (!lockedUnits.length && !activeUnit) return "";
+      const all = [...lockedUnits];
+      if (activeUnit) all.push(activeUnit);
+
+      const words = [];
+      let current = "";
+      for (const u of all) {
+        current += u.text;
+        if (u.breakAfter) {
+          words.push(current);
+          current = "";
+        }
+      }
+      if (current) words.push(current);
+      return words.join(" ");
+    }
+
+    function renderUnits() {
+      unitsContainer.innerHTML = "";
+
+      if (lockedUnits.length === 0 && !activeUnit) {
+        const span = document.createElement("span");
+        span.className = "unit unit-active";
+        span.textContent = "SAY SOMETHING";
+        unitsContainer.appendChild(span);
+        return;
+      }
+
+      const appendUnitSpan = (u, isActive) => {
+        const span = document.createElement("span");
+        span.className = "unit " + (isActive ? "unit-active" : "unit-locked");
+        span.textContent = u.text;
+        if (isActive) {
+          span.style.fontStyle = currentItalic ? "italic" : "normal";
+        } else {
+          span.style.setProperty("--unit-wght", u.wght);
+          span.style.setProperty("--unit-wdScale", u.wdScale);
+          span.style.fontStyle = u.italic ? "italic" : "normal";
+        }
+        unitsContainer.appendChild(span);
+
+        if (u.breakAfter) {
+          const space = document.createElement("span");
+          space.className = "word-space";
+          unitsContainer.appendChild(space);
+        }
+
+        if (u.hardBreakAfter) {
+          const br = document.createElement("span");
+          br.className = "line-break";
+          br.innerHTML = "<br />";
+          unitsContainer.appendChild(br);
+        }
+      };
+
+      lockedUnits.forEach((u) => appendUnitSpan(u, false));
+      if (activeUnit) appendUnitSpan(activeUnit, true);
+    }
+
+    function updateFromTranscript(transcript) {
+      const seq = buildUnitSequence(transcript);
+      if (seq.length === 0) {
+        lockedUnits = [];
+        activeUnit = null;
+        renderUnits();
+        return;
+      }
+
+      const numLocked = lockedUnits.length;
+      const lastIdx = seq.length - 1;
+
+      // Freeze completed units
+      for (let i = numLocked; i < lastIdx; i++) {
+        const base = seq[i];
+        lockedUnits.push({
+          text: base.text,
+          breakAfter: base.breakAfter,
+          hardBreakAfter: base.hardBreakAfter,
+          wght: currentWght.toFixed(0),
+          wdScale: currentWidth.toFixed(2),
+          italic: currentItalic
+        });
+      }
+
+      activeUnit = seq[lastIdx];
+      renderUnits();
+    }
+
+    async function initAudio() {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaStreamSource(stream);
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.7;
+
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+      timeData = new Float32Array(analyser.fftSize);
+
+      source.connect(analyser);
+    }
+
+    function resizeWaveCanvas() {
+      if (!waveCanvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = waveCanvas.getBoundingClientRect();
+      waveCanvas.width = rect.width * dpr;
+      waveCanvas.height = rect.height * dpr;
+      waveCtx = waveCanvas.getContext("2d");
+      if (waveCtx) {
+        waveCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    }
+
+    function drawWaveform() {
+      if (!waveCtx || !waveCanvas) return;
+      const rect = waveCanvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      waveCtx.clearRect(0, 0, w, h);
+
+      waveCtx.strokeStyle = "#111111";
+      waveCtx.lineWidth = 1;
+
+      const baseline = h / 2;
+      waveCtx.beginPath();
+      waveCtx.moveTo(0, baseline);
+
+      const len = waveData.length;
+      if (len === 0) {
+        waveCtx.lineTo(w, baseline);
+        waveCtx.stroke();
+        return;
+      }
+
+      for (let i = 0; i < len; i++) {
+        const x = (i / (len - 1 || 1)) * w;
+        const amp = waveData[i]; // 0–1
+        const y = baseline - amp * (h / 2 - 2);
+        waveCtx.lineTo(x, y);
+      }
+      waveCtx.stroke();
+    }
+
+    function animate() {
+      if (!running || !analyser) return;
+
+      analyser.getFloatTimeDomainData(timeData);
+      analyser.getByteFrequencyData(freqData);
+
+      // Loudness (RMS)
+      let sumSq = 0;
+      for (let i = 0; i < timeData.length; i++) sumSq += timeData[i] * timeData[i];
+      let rms = Math.sqrt(sumSq / timeData.length);
+      let loudness = clamp(rms * 8, 0, 1);
+
+      // Spectral entropy
+      let magSum = 0;
+      for (let i = 0; i < freqData.length; i++) magSum += freqData[i] / 255;
+      let H = 0;
+      for (let i = 0; i < freqData.length; i++) {
+        let m = freqData[i] / 255;
+        if (magSum > 0) {
+          let p = m / magSum;
+          if (p > 0) H -= p * Math.log2(p);
+        }
+      }
+      const maxH = Math.log2(freqData.length);
+      let spectralEntropy = maxH > 0 ? clamp(H / maxH, 0, 1) : 0;
+
+      // Map loudness → weight + width + italic
+      currentWght = 250 + loudness * 650;
+      const extraWidth = MAX_EXTRA_WIDTH * widthIntensity;
+      currentWidth = BASE_WIDTH + loudness * extraWidth;
+      currentItalic = loudness < 0.25;
+
+      document.documentElement.style.setProperty("--entropy", loudness.toFixed(3));
+      document.documentElement.style.setProperty("--wght", currentWght.toFixed(0));
+      document.documentElement.style.setProperty("--wdScale", currentWidth.toFixed(2));
+
+      const activeSpan = document.querySelector(".unit-active");
+      if (activeSpan) {
+        activeSpan.style.fontStyle = currentItalic ? "italic" : "normal";
+      }
+
+      loudFill.style.transform = `scaleX(${loudness.toFixed(3)})`;
+      specFill.style.transform = `scaleX(${spectralEntropy.toFixed(3)})`;
+      loudVal.textContent = loudness.toFixed(2);
+      specVal.textContent = spectralEntropy.toFixed(2);
+      entropyVal.textContent = loudness.toFixed(2);
+      wghtVal.textContent = currentWght.toFixed(0);
+      wdVal.textContent = currentWidth.toFixed(2);
+
+      // Waveform data
+      waveData.push(loudness);
+      if (waveData.length > 300) waveData.shift();
+      drawWaveform();
+
+      requestAnimationFrame(animate);
+    }
+
+    function initSpeech() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        speechStatus.textContent = "Speech: not supported in this browser.";
+        return;
+      }
+      speechSupported = true;
+      recognition = new SR();
+      recognition.lang = "en-US";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        speechStatus.textContent = "Listening…";
+      };
+
+      recognition.onresult = (event) => {
+        let full = "";
+        for (let i = 0; i < event.results.length; i++) {
+          full += event.results[i][0].transcript + " ";
+        }
+        updateFromTranscript(full);
+      };
+
+      recognition.onerror = (e) => {
+        console.error("Speech error", e);
+        if (!running) return;
+        speechStatus.textContent = "Speech error: " + e.error;
+      };
+
+      recognition.onend = () => {
+        if (running) {
+          speechStatus.textContent = "Restarting…";
+          recognition.start();
+        } else {
+          speechStatus.textContent = "Stopped.";
+        }
+      };
+    }
+
+    function stopAll() {
+      if (!running) return;
+      running = false;
+
+      statusDot.classList.remove("live");
+      statusMsg.textContent = "Stopped. Edit transcript below if needed.";
+      speechStatus.textContent = "Stopped.";
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+
+      if (recognition) {
+        try { recognition.stop(); } catch (e) { console.warn(e); }
+      }
+
+      if (audioCtx && audioCtx.state !== "closed") {
+        audioCtx.close();
+      }
+
+      editText.value = unitsToTranscript();
+    }
+
+    startBtn.addEventListener("click", async () => {
+      if (running) return;
+      running = true;
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          statusMsg.textContent = "Browser does not support microphone.";
+          running = false;
+          return;
+        }
+
+        statusMsg.textContent = "Mic live. Speak to draw " + (unitMode === "word" ? "words." : "syllables.");
+        statusDot.classList.add("live");
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+
+        await initAudio();
+        renderUnits();
+        resizeWaveCanvas();
+        waveData = [];
+        requestAnimationFrame(animate);
+
+        initSpeech();
+        if (speechSupported && recognition) {
+          recognition.start();
+        }
+
+      } catch (err) {
+        console.error(err);
+        statusMsg.textContent = "Mic permission denied or an error occurred.";
+        running = false;
+        statusDot.classList.remove("live");
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+    });
+
+    stopBtn.addEventListener("click", () => {
+      stopAll();
+    });
+
+    // Width intensity slider
+    widthSlider.addEventListener("input", () => {
+      widthIntensity = widthSlider.value / 100;
+      widthPct.textContent = `${Math.round(widthIntensity * 100)}%`;
+    });
+
+    // Tracking (kerning) slider
+    trackingSlider.addEventListener("input", () => {
+      const val = parseInt(trackingSlider.value, 10);
+      trackingVal.textContent = val;
+      const em = (val / 1000).toFixed(3);
+      document.documentElement.style.setProperty("--tracking", `${em}em`);
+    });
+
+    // Unit mode select
+    unitModeSelect.addEventListener("change", () => {
+      unitMode = unitModeSelect.value; // "word" or "syllable"
+      statusMsg.textContent = `Unit mode: ${unitMode === "word" ? "words" : "syllables"}. Press START or APPLY to reflow.`;
+    });
+
+    // Font dropdown
+    fontSelect.addEventListener("change", () => {
+      const val = fontSelect.value;
+      const ff = fonts[val] || fonts.inter;
+      document.documentElement.style.setProperty("--font-family", ff);
+    });
+
+    // Apply edited transcript
+    applyEditBtn.addEventListener("click", () => {
+      const edited = editText.value || "";
+      const seq = buildUnitSequence(edited);
+
+      const oldStyles = [...lockedUnits, ...(activeUnit ? [activeUnit] : [])].map(u => ({
+        wght: u.wght,
+        wdScale: u.wdScale,
+        italic: u.italic
+      }));
+
+      const newLocked = [];
+      for (let i = 0; i < seq.length; i++) {
+        const base = seq[i];
+        const style = oldStyles[i] || {
+          wght: "400",
+          wdScale: "1.00",
+          italic: false
+        };
+        newLocked.push({
+          text: base.text,
+          breakAfter: base.breakAfter,
+          hardBreakAfter: base.hardBreakAfter,
+          wght: style.wght,
+          wdScale: style.wdScale,
+          italic: style.italic
+        });
+      }
+
+      lockedUnits = newLocked;
+      activeUnit = null;
+      renderUnits();
+      statusMsg.textContent = "Transcript re-applied with current unit mode.";
+    });
+
+    // PDF / Print button
+    printBtn.addEventListener("click", () => {
+      window.print();
+    });
+
+    // Date stamp
+    function setDateStamp() {
+      const now = new Date();
+      const formatted = now.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+      dateValue.textContent = formatted;
+    }
+
+    window.addEventListener("resize", () => {
+      resizeWaveCanvas();
+      drawWaveform();
+    });
+
+    // Initial
+    setDateStamp();
+    resizeWaveCanvas();
+    renderUnits();
+  </script>
+</body>
+</html>
